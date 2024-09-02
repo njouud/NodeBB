@@ -89,6 +89,10 @@ module.exports = function (Topics) {
 			}
 		});
 		const lastPost = postData[postData.length - 1];
+		await handleLastPost(lastPost, set, reverse, topicData);
+	}
+
+	async function handleLastPost(lastPost, set, reverse, topicData) {
 		if (lastPost) {
 			lastPost.eventStart = reverse ? topicData.timestamp : lastPost.timestamp;
 			lastPost.eventEnd = reverse ? lastPost.timestamp : Date.now();
