@@ -74,13 +74,16 @@ module.exports = function (Topics) {
 		});
 		return result.posts;
 	};
-	/*
-	commit line
-	*/
+
 	async function addEventStartEnd(postData, set, reverse, topicData) {
 		if (!postData.length) {
 			return;
 		}
+		/*
+		helper function to be called for each post object
+		in the postData array
+		to set the start and end times of each post
+		*/
 		function setEventTimes(p, nextPost, reverse, topicData) {
 			if (p && p.index === 0 && reverse) {
 				p.eventStart = topicData.lastposttime;
@@ -94,21 +97,41 @@ module.exports = function (Topics) {
 			const nextPost = postData[index + 1];
 			setEventTimes(p, nextPost, reverse, topicData);
 		});
+		/*
+		call another helper function to handle the last post
+		*/
 		await handleLastPost(postData, set, reverse, topicData);
 	}
-
+	/*
+	helper function for last post
+	*/
 	async function handleLastPost(lastPost, set, reverse, topicData) {
-		if (lastPost) {
-			lastPost.eventStart = reverse ? topicData.timestamp : lastPost.timestamp;
-			lastPost.eventEnd = reverse ? lastPost.timestamp : Date.now();
-			if (lastPost.index) {
-				const nextPost = await db[reverse ? 'getSortedSetRevRangeWithScores' : 'getSortedSetRangeWithScores'](set, lastPost.index, lastPost.index);
-				if (reverse) {
-					lastPost.eventStart = nextPost.length ? nextPost[0].score : lastPost.eventStart;
-				} else {
-					lastPost.eventEnd = nextPost.length ? nextPost[0].score : lastPost.eventEnd;
-				}
-			}
+		if (!lastPost) {
+			return;
+		}
+		/*
+		break down if else statements
+		*/
+		if (reverse) {
+			lastPost.eventStart = topicData.timestamp;
+			lastPost.eventEnd = lastPost.timestamp;
+		} else {
+			lastPost.eventStart = lastPost.timestamp;
+			lastPost.eventEnd = Date.now();
+		}
+		if (!lastPost.index) {
+			return;
+		}
+		const getNextPost = reverse ? 'getSortedSetRevRangeWithScores' : 'getSortedSetRangeWithScores';
+		const nextPost = await db[getNextPost](set, lastPost.index, lastPost.index);
+		/*
+		combine reverse and nextPost.length checks
+		in one boolean check
+		*/
+		if (reverse && nextPost.length) {
+			lastPost.eventStart = nextPost[0].score;
+		} else if (!reverse && nextPost.length) {
+			lastPost.eventEnd = nextPost[0].score;
 		}
 	}
 
