@@ -81,17 +81,20 @@ module.exports = function (Topics) {
 		if (!postData.length) {
 			return;
 		}
-		postData.forEach((p, index) => {
+		function setEventTimes(p, nextPost, reverse, topicData) {
 			if (p && p.index === 0 && reverse) {
 				p.eventStart = topicData.lastposttime;
 				p.eventEnd = Date.now();
-			} else if (p && postData[index + 1]) {
-				p.eventStart = reverse ? postData[index + 1].timestamp : p.timestamp;
-				p.eventEnd = reverse ? p.timestamp : postData[index + 1].timestamp;
+			} else if (p && nextPost) {
+				p.eventStart = reverse ? nextPost.timestamp : p.timestamp;
+				p.eventEnd = reverse ? p.timestamp : nextPost.timestamp;
 			}
+		}
+		postData.forEach((p, index) => {
+			const nextPost = postData[index + 1];
+			setEventTimes(p, nextPost, reverse, topicData);
 		});
-		const lastPost = postData[postData.length - 1];
-		await handleLastPost(lastPost, set, reverse, topicData);
+		await handleLastPost(postData, set, reverse, topicData);
 	}
 
 	async function handleLastPost(lastPost, set, reverse, topicData) {
