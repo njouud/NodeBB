@@ -76,6 +76,7 @@ module.exports = function (Topics) {
 	};
 
 	async function addEventStartEnd(postData, set, reverse, topicData) {
+		console.log('njoud: refactored code is running');
 		if (!postData.length) {
 			return;
 		}
@@ -85,6 +86,7 @@ module.exports = function (Topics) {
 		to set the start and end times of each post
 		*/
 		function setEventTimes(p, nextPost, reverse, topicData) {
+			console.log('njoud: refactored code is running (helper function 1)');
 			if (p && p.index === 0 && reverse) {
 				p.eventStart = topicData.lastposttime;
 				p.eventEnd = Date.now();
@@ -106,6 +108,7 @@ module.exports = function (Topics) {
 	helper function for last post
 	*/
 	async function handleLastPost(lastPost, set, reverse, topicData) {
+		console.log('njoud: refactored code is running (helper function 2)');
 		if (!lastPost) {
 			return;
 		}
@@ -134,9 +137,7 @@ module.exports = function (Topics) {
 			lastPost.eventEnd = nextPost[0].score;
 		}
 	}
-	/*
-	comment to push again
-	*/
+
 	Topics.addPostData = async function (postData, uid) {
 		if (!Array.isArray(postData) || !postData.length) {
 			return [];
